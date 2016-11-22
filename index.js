@@ -54,8 +54,13 @@ scrapper.getReview(function (val) {
 
   console.log(test);
   
-  for (var i = 1; i < test; i++) {
-    request('https://www.bukalapak.com/c/handphone/hp-smartphone?page='+i+'&sizes%5Bgeneral%5D=126048&sizes%5Bsem%5D=10&view_mode=list', function (error, response, html) {
+  for (var i = 1; i < 11; i++) {
+    request('https://www.bukalapak.com/c/perawatan-kecantikan/pelangsing?page='+i+'&sizes%5Bgeneral%5D=12090&sizes%5Bsem%5D=5&view_mode=list', function (error, response, html) {
+    // request('https://www.bukalapak.com/c/perawatan-kecantikan/parfum?page='+i+'&sizes%5Bgeneral%5D=88437&sizes%5Bsem%5D=5&view_mode=list', function (error, response, html) {
+    // request('https://www.bukalapak.com/c/perawatan-kecantikan/perawatan-tubuh-2311?page='+i+'&sizes%5Bgeneral%5D=140020&sizes%5Bsem%5D=5&view_mode=list', function (error, response, html) {
+    // request('https://www.bukalapak.com/c/perawatan-kecantikan/makeup?page='+i+'&sizes%5Bgeneral%5D=262753&sizes%5Bsem%5D=5&view_mode=list', function (error, response, html) {
+    // request('https://www.bukalapak.com/c/perawatan-kecantikan/perawatan-wajah?page='+i+'&sizes%5Bgeneral%5D=146272&sizes%5Bsem%5D=5&view_mode=list', function (error, response, html) {
+    // request('https://www.bukalapak.com/c/handphone/hp-smartphone?page='+i+'&sizes%5Bgeneral%5D=126048&sizes%5Bsem%5D=10&view_mode=list', function (error, response, html) {
       if (!error && response.statusCode == 200) {
         var $ = cheerio.load(html);
 
@@ -80,7 +85,7 @@ scrapper.getReview(function (val) {
           console.log(results);
           arrays.push(results);
           
-          fs.writeFile('handphone.csv', arrays, function (err){
+          fs.writeFile('pelangsing.csv', arrays, function (err){
             // Do something ...
             if (err) throw err;
             console.log('Successfully scraped!');

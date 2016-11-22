@@ -2,18 +2,26 @@
 var request = require('request');
 var cheerio = require('cheerio');
 var mysql   = require('mysql');
+var fs = require('fs');
 
 // Scrapper Global Variable
 var scrapper = {};
 var productName;
-var customerName;
-var reviewDate;
-var reviewTitle;
-var reviewDetails;
-var verifiedPurchase;
-var reviewSentiment;
-var reviewRatings;
-
+var gambarProduk;
+var hargaAwal;
+var hargaDiskon;
+var sisaStok;
+var detailBarang;
+var peminat;
+var dilihat;
+var updateTerakhir;
+var terjual;
+var deskripsiBarang;
+var catatanPelapak;
+var rating;
+var link;
+var results;
+var arrays = ['Nama Product, Pelapak, Rating, Gambar Produk, Harga Barang, Detail Barang\n'];
 
 // Mysql Configuration
 var connection = mysql.createConnection({
@@ -27,10 +35,9 @@ var connection = mysql.createConnection({
 /**
  * Get Page Number and save the review into database
  * 
- * @param {any} sentiment
  * @param {any} callback
  */
-scrapper.getReview = function (sentiment,callback) {
+scrapper.getReview = function (callback) {
   request('https://www.bukalapak.com/c/handphone/hp-smartphone?page=1&sizes%5Bgeneral%5D=126048&sizes%5Bsem%5D=10', function (error, response, html) {
     if (!error && response.statusCode == 200) {
       var $ = cheerio.load(html);
@@ -41,38 +48,43 @@ scrapper.getReview = function (sentiment,callback) {
 }
 
 // Run getReview method
-scrapper.getReview(sen,function (val) {
+scrapper.getReview(function (val) {
   
   var test = parseInt(store(val));
-//   replace(/,/g, ''));
-  
+
   console.log(test);
   
-  for (var i = 1; i < 3; i++) {
-    request('https://www.bukalapak.com/c/handphone/hp-smartphone?page='+i+'&sizes%5Bgeneral%5D=126048&sizes%5Bsem%5D=10', function (error, response, html) {
+  for (var i = 1; i < test; i++) {
+    request('https://www.bukalapak.com/c/handphone/hp-smartphone?page='+i+'&sizes%5Bgeneral%5D=126048&sizes%5Bsem%5D=10&view_mode=list', function (error, response, html) {
       if (!error && response.statusCode == 200) {
         var $ = cheerio.load(html);
+
+        $('div.product__rating').each(function (i, element){
+          // Do something ...
+          rating = $(this).children().children().text();
+        });
         
-        // Get Review Title
-        $('a.product__name').each(function(i, element){
+        $('h5.user__name').each(function (i, element){
+          // Do something ...
+          pelapak = $(this).children().text().replace(',','');
+        });  
 
-          productName = $(this).text();
-        //   customerName = $(this).parent().next().children().children().next().next().text();
-        //   reviewDate = $(this).parent().next().children().next().next().next().text().substr(3);
-        //   reviewTitle = $(this).text();
-        //   reviewDetails = $(this).parent().next().next().next().children().text();
-        //   verifiedPurchase = $(this).parent().next().next().children().next().next().children().children().text();
-        //   reviewSentiment = sen;
-        //   reviewRatings = $(this).prev().prev().children().children().text().substr(0,1);
+        $('div.product-list-item').each(function(i, element){
+          pName = $(this).children().children().next().next().children().children().first();
+          productName = pName.text().replace(',','');
+          gambarProduk = $(this).children().children().children().children().attr('src');
+          mataUang = $(this).children().children().next().next().children().next().next().children().children().text().replace('?','');
+          link = 'https://www.bukalapak.com'+pName.attr('href');
+          var results = '\n' + productName + ',' + pelapak + ',' + rating + ',' + gambarProduk + ',' + mataUang + ',' + link;
 
-          // console.log(productName + ' - ' + customerName + ' - ' + reviewDate + ' - ' + reviewTitle + ' - ' + verifiedPurchase + ' - ' + reviewSentiment + ' - ' + reviewRatings);
-          console.log(productName);
-          // Query
-        //   connection.query('INSERT INTO `review`(`review_id`, `product_name`, `customer_name`, `review_date`, `review_title`, `review_detail`, `verified_purchase`, `review_sentiment`, `review_ratings`)' + 
-        //                    'VALUES (NULL,'+mysql.escape(productName)+','+mysql.escape(customerName)+','+mysql.escape(reviewDate)+','+mysql.escape(reviewTitle)+','+mysql.escape(reviewDetails)+','+mysql.escape(verifiedPurchase)+','+mysql.escape(reviewSentiment)+','+mysql.escape(reviewRatings)+')', function(err, result) {
-        //     if (err) throw err;
-        //     console.log(reviewTitle + ' has been inserted into database successfully.');
-        //   });
+          console.log(results);
+          arrays.push(results);
+          
+          fs.writeFile('handphone.csv', arrays, function (err){
+            // Do something ...
+            if (err) throw err;
+            console.log('Successfully scraped!');
+          })
           
         });
       }
@@ -80,6 +92,8 @@ scrapper.getReview(sen,function (val) {
   }
 
 });
+
+
 
 /**
  * Passing the value into asyncronous function

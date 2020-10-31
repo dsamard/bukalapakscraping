@@ -136,6 +136,16 @@ app.get('/scraphandphone', function (req, res) {
     }
 
   });
+  
+  scrapper.getReview = function (callback) {
+    request('https://www.bukalapak.com/c/sepeda?from=category-popular-homepage-1', function (error, response, html) {
+      if (!error && response.statusCode == 200) {
+        var $ = cheerio.load(html);
+        var pageNum = $('span.last-page').text();
+        return callback(pageNum);
+      }
+    });
+  }
 
   /**
    * Passing the value into asyncronous function
